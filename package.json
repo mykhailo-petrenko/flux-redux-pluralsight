@@ -5,14 +5,14 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "webpack-dev-server --content-base public/ --inline"
+    "start": "webpack-dev-server --content-base public/ --inline --port 8888"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "redux": "^3.6.0",
-    "redux-logger": "^2.7.4",
+    "redux-logger": "^2.10.2",
     "shortid": "^2.2.6"
   },
   "engine": "node 7.2.0",
