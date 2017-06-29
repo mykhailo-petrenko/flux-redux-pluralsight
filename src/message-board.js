@@ -1,4 +1,4 @@
-import {createStore} from 'redux';
+import {createStore, combineReducers} from 'redux';
 import Message from './Message';
 
 const ONLINE = 'ONLINE';
@@ -8,14 +8,16 @@ const OFFLINE = 'OFFLINE';
 const UPDATE_STATUS = 'UPDATE_STATUS';
 const NEW_MESSAGE = 'NEW_MESSAGE';
 
-const createUpdateStatusEvent = status => ({
+const updateStatusAction = status => ({
     type: UPDATE_STATUS,
     value: status
 });
 
-const createNewMessageEvent = (message, user) => ({
+const newMessageAction = (message, userName) => ({
     type: NEW_MESSAGE,
-    value: new Message(message, user)
+    value: message,
+    author: userName,
+    date: new Date()
 });
 
 const defaultState = {
@@ -26,25 +28,28 @@ const defaultState = {
     userStatus: ONLINE
 };
 
-const reducer = (state = defaultState, {type, value}) => {
-    let newState;
-    switch (type) {
-        case UPDATE_STATUS:
-            newState = {...state, userStatus: value};
-
-            return newState;
-
+const messagesReducer = (state = defaultState.messages, {type, value, author, date}) => {
+    switch(type) {
         case NEW_MESSAGE:
-            newState = {...state, messages: [...state.messages]};
-            newState.messages.push(value);
-
-            return newState;
+            return [...state, new Message(value, author, date)];
     }
-
     return state;
 }
 
-const store = createStore(reducer);
+const stateReducer = (state = defaultState.userStatus, {type, value}) => {
+    switch (type) {
+        case UPDATE_STATUS: 
+            return value;
+    }
+    return state;
+};
+
+const rootReducer = combineReducers({
+    messages: messagesReducer,
+    userStatus: stateReducer
+});
+
+const store = createStore(rootReducer);
 
 const render = () => {
     const messagesElement = document.getElementById('messages');
@@ -78,7 +83,9 @@ document.forms.newMessage.addEventListener('submit', e => {
         return;
     }
 
-    store.dispatch(createNewMessageEvent(messageInput.value));
+    const userName = localStorage['userPreferences'] && JSON.parse(localStorage['userPreferences']).userName;
+    
+    store.dispatch(newMessageAction(messageInput.value, userName));
     messageInput.value = '';
 });
 
@@ -86,5 +93,5 @@ document.forms.newMessage.addEventListener('submit', e => {
 document.forms.userStatus.status.addEventListener('change', e => {
     e.preventDefault();
 
-    store.dispatch(createUpdateStatusEvent(e.target.value));
+    store.dispatch(updateStatusAction(e.target.value));
 });
